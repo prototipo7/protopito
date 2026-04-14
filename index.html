@@ -100,7 +100,7 @@ tr:hover { background:#f1f1f1; }
         <li>Estoque</li>
         <li>Entradas</li>
         <li>Saídas</li>
-        <li>Relatórios</li>
+        <li onclick="window.location.href='relatorios.html'">Relatórios</li>
         <li>Validade</li>
         <li>Configurações</li>
         <li id="logout">Sair</li>
@@ -156,24 +156,30 @@ tr:hover { background:#f1f1f1; }
                 <th>Validade</th>
                 <th>Status</th>
             </tr>
-            <tr>
-                <td>Paracetamol</td>
-                <td>120</td>
-                <td>12/2026</td>
-                <td><span class="status ok">Disponível</span></td>
-            </tr>
-            <tr>
-                <td>Amoxicilina</td>
-                <td>10</td>
-                <td>05/2025</td>
-                <td><span class="status low">Baixo</span></td>
-            </tr>
-            <tr>
-                <td>Ibuprofeno</td>
-                <td>0</td>
-                <td>01/2024</td>
-                <td><span class="status expired">Vencido</span></td>
-            </tr>
+           <tr><td>Paracetamol</td><td>120</td><td>12/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Amoxicilina</td><td>10</td><td>05/2025</td><td><span class="status low">Baixo</span></td></tr>
+<tr><td>Ibuprofeno</td><td>0</td><td>01/2024</td><td><span class="status expired">Vencido</span></td></tr>
+
+<tr><td>Dipirona</td><td>80</td><td>09/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Aspirina</td><td>50</td><td>08/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Cetoprofeno</td><td>30</td><td>07/2025</td><td><span class="status low">Baixo</span></td></tr>
+<tr><td>Azitromicina</td><td>15</td><td>03/2026</td><td><span class="status low">Baixo</span></td></tr>
+<tr><td>Ciprofloxacino</td><td>40</td><td>11/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Amoxicilina + Clavulanato</td><td>25</td><td>06/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Omeprazol</td><td>100</td><td>12/2027</td><td><span class="status ok">Disponível</span></td></tr>
+
+
+<tr><td>Metronidazol</td><td>65</td><td>07/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Clindamicina</td><td>20</td><td>05/2025</td><td><span class="status low">Baixo</span></td></tr>
+<tr><td>Gentamicina</td><td>30</td><td>04/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Vancomicina</td><td>18</td><td>02/2026</td><td><span class="status low">Baixo</span></td></tr>
+<tr><td>Cefalexina</td><td>85</td><td>10/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Ceftriaxona</td><td>40</td><td>11/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Fluconazol</td><td>50</td><td>09/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Ivermectina</td><td>0</td><td>01/2024</td><td><span class="status expired">Vencido</span></td></tr>
+<tr><td>Albendazol</td><td>100</td><td>12/2026</td><td><span class="status ok">Disponível</span></td></tr>
+<tr><td>Mebendazol</td><td>75</td><td>08/2026</td><td><span class="status ok">Disponível</span></td></tr>
+
         </table>
     </div>
 
@@ -192,6 +198,7 @@ tr:hover { background:#f1f1f1; }
                 <option value="Retalho">Retalho</option>
                 <option value="Grosso">Grosso</option>
             </select>
+            <input type="month" id="validade">
             <div style="display:flex; justify-content:space-between;">
                 <button class="confirm-btn" onclick="confirmar()">Confirmar</button>
                 <button class="cancel-btn" onclick="document.getElementById('modal').style.display='none'">Cancelar</button>
@@ -270,28 +277,58 @@ function abrirModal(tipo){
 
 // CONFIRMAR MOVIMENTAÇÃO
 function confirmar(){
-    let nome=document.getElementById("nome").value.trim();
+    let nome=document.getElementById("nome").value.trim().toLowerCase();
     let quantidade=parseInt(document.getElementById("quantidade").value);
-    if(!nome||!quantidade) return alert("Preencha todos os campos!");
+    let validade=document.getElementById("validade").value;
+
+    if(!nome || isNaN(quantidade)){
+        return alert("Preencha todos os campos!");
+    }
+
     let tabela=document.getElementById("medicamentosTable");
-    let linhas=tabela.rows; let encontrado=false;
+    let linhas=tabela.rows;
+    let encontrado=false;
+
     for(let i=1;i<linhas.length;i++){
-        if(linhas[i].cells[0].innerText.toLowerCase()===nome.toLowerCase()){
+
+        let nomeTabela = linhas[i].cells[0].innerText.trim().toLowerCase();
+
+        if(nomeTabela.includes(nome)){
+
             let atual=parseInt(linhas[i].cells[1].innerText);
-            linhas[i].cells[1].innerText=modo==="add"?atual+quantidade:Math.max(0,atual-quantidade);
+
+            let novoValor = (modo==="add")
+                ? atual + quantidade
+                : atual - quantidade;
+
+            if(novoValor < 0) novoValor = 0;
+
+            linhas[i].cells[1].innerText = novoValor;
+
+            // 🔥 atualizar validade
+            if(modo==="add" && validade){
+                linhas[i].cells[2].innerText = validade;
+            }
+
             encontrado=true;
+            break;
         }
     }
-    if(!encontrado&&modo==="add"){
+
+    if(!encontrado && modo==="add"){
         let nova=tabela.insertRow();
         nova.insertCell(0).innerText=nome;
         nova.insertCell(1).innerText=quantidade;
-        nova.insertCell(2).innerText="--";
+        nova.insertCell(2).innerText=validade || "--";
         nova.insertCell(3).innerHTML='<span class="status ok">Disponível</span>';
     }
+
+    if(!encontrado && modo==="remove"){
+        alert("Medicamento não encontrado!");
+    }
+
     document.getElementById("modal").style.display="none";
 }
-
 // BLOCO USUÁRIOS
 const userBlock = document.getElementById('userAdminBlock');
 const userModal = document.getElementById('userModal');
